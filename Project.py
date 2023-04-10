@@ -4,7 +4,7 @@ import pyinputplus as pip
 
 # asks user file path on their local computer
 fileName = pip.inputFilepath(
-    prompt="Please enter root file path to spreadsheet (spreadsheet should have columns: A - first name, B - last name, C - email)")
+    prompt="Please enter root file path to spreadsheet, ensure that there are no quotes. (spreadsheet should have columns: A - first name, B - last name, C - email)\n")
 
 # defines workBook, sheet, list of columns and count of rows
 workBook = openpyxl.load_workbook(fileName)
@@ -29,7 +29,7 @@ def emailValidation(firstName, lastName, email):
     email = email.replace(" ", "").lower()
 
     # checks if email is the same as required pattern
-    if (email != basicPattern):
+    if (email != basicPattern and email != None):
         email = basicPattern
         print("Email cell", str(column) + str(row) + ", of", firstName.title(),
               lastName.title(), "has invalid format and was changed to:", email)
@@ -86,13 +86,15 @@ for row in range(2, rowCount + 1):
     </html> 
     '''
     # final confirmation before sending emails
-    confirmation = pip.inputYesNo(
-        prompt="Are you sure you want to send messages to all emails in a spreadsheet: yes/no")
-    if (confirmation == "yes"):
-        mail.Send()
-        print("Mails were successfully sent to all emails in spreadsheet!")
+confirmation = pip.inputYesNo(
+prompt="Are you sure you want to send messages to all emails in a spreadsheet: y/n\n", strip='"')
 
-    else:
-        print("Operation cancelled, no messages were sent")
+if (confirmation == "yes"):
+    mail.Send()
+    print("Mails were successfully sent to all emails in spreadsheet!")
+
+else:
+    print("Operation cancelled, no messages were sent")
+
 
 workBook.close()
