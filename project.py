@@ -1,60 +1,79 @@
-import openpyxl, win32com.client as win32
+import openpyxl
+import win32com.client as win32
+import pyinputplus as pip
 
-fileName = "Book1.xlsx"
+# asks user file path on their local computer
+fileName = pip.inputFilepath(
+    prompt="Please enter spreadsheet filename, ensure that there are no quotes. (spreadsheet should have columns: A - first name, B - last name, C - email)\n")
 
+# defines workBook, sheet, list of columns and count of rows
 workBook = openpyxl.load_workbook(fileName)
 sheet = workBook.active
-columnList= ["A", "B", "C"]
+columnList = ["A", "B", "C"]
 rowCount = sheet.max_row
 
-
-def emailValidation (firstName, lastName, email):
+# email validation
+def emailValidation(firstName, lastName, email):
     firstName = str(firstName).lower().replace(" ", "")
     lastName = str(lastName).lower().replace(" ", "")
 
     basicPattern = firstName + "." + lastName + "@georgiancollege.ca"
 
     # creates email if the field is empty
-    if(email == None):
+    if (email == None):
         email = basicPattern
-        print("Email cell", str(column) + str(row) + ", of", firstName.title(), lastName.title(), "was empty so a new email was generated automatically:", email)
-    
+        print("Email cell", str(column) + str(row) + ", of", firstName.title(),
+              lastName.title(), "was empty so a new email was generated automatically:", email)
+
     # cleans the email from spaces
-    email = email.replace(" ","").lower()
+    email = email.replace(" ", "").lower()
 
     # checks if email is the same as required pattern
-    if (email != basicPattern):
+    if (email != basicPattern and email != None):
         email = basicPattern
-        print("Email cell", str(column) + str(row) + ", of", firstName.title(), lastName.title(), "has invalid format and was changed to:", email)
+        print("Email cell", str(column) + str(row) + ", of", firstName.title(),
+              lastName.title(), "has invalid format and was changed to:", email)
 
     return email
 
+# iterates through all cells in spreadsheet
 for row in range(2, rowCount + 1):
     for column in columnList:
         cellContent = sheet[str(column)+str(row)]
 
+        # checks and tells to user that cell is empty
         if (cellContent == None and column != "C"):
             print("Cell", str(column) + str(row), "is empty")
             # sheet.delete_row(row, 1)
             # workBook.save(fileName)
-        
+
+        # defines variables according to cell value
         if (column == "A"):
             firstName = cellContent.value
-        elif (column == "B"): 
+        elif (column == "B"):
             lastName = cellContent.value
         elif (column == "C"):
             email = cellContent.value
-            
+
+    # validates each email and reassigns value to cell
     email = emailValidation(firstName, lastName, email)
     sheet["C" + str(row)] = email
     workBook.save(fileName)
 
+
+# checks all emails to send messages
 for row in range(2, rowCount + 1):
-    
+
     cellContent = sheet['C' + str(row)]
     cellContent = cellContent.value
 
-    outlook = win32.Dispatch('outlook.application')
+    try:
+        # creates object of outlook using application in PC
+        outlook = win32.Dispatch('outlook.application')
+    except:
+        print("You do not have Outlook application installed on your PC")
+
+    # creates mail object that will be sent
     mail = outlook.CreateItem(0)
     mail.To = cellContent
     mail.Subject = 'Welcome to GC Flex Teaching!'
