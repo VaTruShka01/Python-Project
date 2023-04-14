@@ -1,4 +1,4 @@
-import openpyxl
+import openpyxl, time
 import win32com.client as win32
 import pyinputplus as pip
 
@@ -11,6 +11,7 @@ workBook = openpyxl.load_workbook(fileName)
 sheet = workBook.active
 columnList = ["A", "B", "C"]
 rowCount = sheet.max_row
+emails = []
 
 # email validation
 def emailValidation(firstName, lastName, email):
@@ -53,28 +54,28 @@ for row in range(2, rowCount + 1):
         elif (column == "B"):
             lastName = cellContent.value
         elif (column == "C"):
-            email = cellContent.value
+            # validates each email and reasigns value to cell
+            email = emailValidation(firstName, lastName, cellContent.value)
+            sheet["C" + str(row)] = email
+            emails.append(email)
+    try:
+        workBook.save(fileName)
+    except PermissionError:
+        print("Please close Excel spreadsheet before running app")
+        time.sleep(10)
+        exit()
+    
+# creates object of outlook using application in PC
 
-    # validates each email and reasigns value to cell
-    email = emailValidation(firstName, lastName, email)
-    sheet["C" + str(row)] = email
-    workBook.save(fileName)
-
-
-    # checks all emails to send messages
-for row in range(2, rowCount + 1):
-
-    cellContent = sheet['C' + str(row)]
-    cellContent = cellContent.value
-
-    # creates object of outlook using application in PC
+try:
     outlook = win32.Dispatch('outlook.application')
+except(Exception):
+    print("You have to have Outlook application downloaded on your machine")
 
-    # creates mail object that will be sent
-    mail = outlook.CreateItem(0)
-    mail.To = cellContent
-    mail.Subject = 'Welcome to GC Flex Teaching!'
-    mail.HTMLBody = '''
+# creates mail object that will be sent
+mail = outlook.CreateItem(0)
+mail.Subject = 'Welcome to GC Flex Teaching!'
+mail.HTMLBody = '''
     <!DOCTYPE html>
     <html>
         <body>
@@ -90,7 +91,13 @@ confirmation = pip.inputYesNo(
 prompt="Are you sure you want to send messages to all emails in a spreadsheet: y/n\n", strip='"')
 
 if (confirmation == "yes"):
-    mail.Send()
+    for email in emails:
+        try:
+            mail.To = email
+            mail.Send()
+            # time.sleep(30)
+        except Exception:
+            print()
     print("Mails were successfully sent to all emails in spreadsheet!")
 
 else:
