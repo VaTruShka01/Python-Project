@@ -3,11 +3,19 @@ import win32com.client as win32
 import pyinputplus as pip
 
 # asks user file path on their local computer
-fileName = pip.inputFilepath(
-    prompt="Please enter root file path to spreadsheet, ensure that there are no quotes. (spreadsheet should have columns: A - first name, B - last name, C - email)\n")
 
-# defines workBook, sheet, list of columns and count of rows
-workBook = openpyxl.load_workbook(fileName)
+fileName = ""
+while (fileName == ""):
+    fileName = pip.inputFilepath(prompt="Please enter root file path to spreadsheet, ensure that there are no quotes. (spreadsheet should have columns: A - first name, B - last name, C - email)\n")
+
+    # defines workBook, sheet, list of columns and count of rows
+
+    try:
+        workBook = openpyxl.load_workbook(fileName)
+    except openpyxl.utils.exceptions.InvalidFileException:
+        print("Root path is not correct!")
+        fileName = ""
+    
 sheet = workBook.active
 columnList = ["A", "B", "C"]
 rowCount = sheet.max_row
@@ -69,7 +77,7 @@ for row in range(2, rowCount + 1):
 
 try:
     outlook = win32.Dispatch('outlook.application')
-except(Exception):
+except(pywintypes.com_error):
     print("You have to have Outlook application downloaded on your machine")
 
 # creates mail object that will be sent
@@ -95,7 +103,7 @@ if (confirmation == "yes"):
         try:
             mail.To = email
             mail.Send()
-            # time.sleep(30)
+            time.sleep(2)
         except Exception:
             print()
     print("Mails were successfully sent to all emails in spreadsheet!")
