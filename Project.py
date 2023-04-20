@@ -2,25 +2,6 @@ import openpyxl, time
 import win32com.client as win32
 import pyinputplus as pip
 
-# asks user file path on their local computer
-
-fileName = ""
-while (fileName == ""):
-    fileName = pip.inputFilepath(prompt="Please enter root file path to spreadsheet, ensure that there are no quotes. (spreadsheet should have columns: A - first name, B - last name, C - email)\n")
-
-    # defines workBook, sheet, list of columns and count of rows
-
-    try:
-        workBook = openpyxl.load_workbook(fileName)
-    except openpyxl.utils.exceptions.InvalidFileException:
-        print("Root path is not correct!")
-        fileName = ""
-    
-sheet = workBook.active
-columnList = ["A", "B", "C"]
-rowCount = sheet.max_row
-emails = []
-
 # email validation
 def emailValidation(firstName, lastName, email):
     firstName = str(firstName).lower().replace(" ", "")
@@ -44,6 +25,28 @@ def emailValidation(firstName, lastName, email):
               lastName.title(), "has invalid format and was changed to:", email)
 
     return email
+
+# asks user file path on their local computer
+
+fileName = ""
+while (fileName == ""):
+    fileName = pip.inputFilepath(prompt="Please enter root file path to spreadsheet, ensure that there are no quotes. Excel spreadsheet must be closed before running application. (spreadsheet should have columns: A - first name, B - last name, C - email)\n",
+                                 default= "Spreadsheet.xlsx", blank=True)
+
+    # defines workBook, sheet, list of columns and count of rows
+
+    try:
+        workBook = openpyxl.load_workbook(fileName)
+    except openpyxl.utils.exceptions.InvalidFileException:
+        print("Root path is not correct! Please copy root path of spreadsheet again.")
+        fileName = ""
+    
+sheet = workBook.active
+columnList = ["A", "B", "C"]
+rowCount = sheet.max_row
+emails = []
+
+
 
     # iterates threw all cells in spreadsheet
 for row in range(2, rowCount + 1):
@@ -70,7 +73,7 @@ for row in range(2, rowCount + 1):
         workBook.save(fileName)
     except PermissionError:
         print("Please close Excel spreadsheet before running app")
-        time.sleep(10)
+        time.sleep(5)
         exit()
     
 # creates object of outlook using application in PC
@@ -79,6 +82,7 @@ try:
     outlook = win32.Dispatch('outlook.application')
 except(pywintypes.com_error):
     print("You have to have Outlook application downloaded on your machine")
+    time.sleep(5)
 
 # creates mail object that will be sent
 mail = outlook.CreateItem(0)
@@ -103,13 +107,16 @@ if (confirmation == "yes"):
         try:
             mail.To = email
             mail.Send()
+            print("Email was sent to: ", email)
             time.sleep(2)
         except Exception:
             print()
     print("Mails were successfully sent to all emails in spreadsheet!")
+    time.sleep(5)
 
 else:
     print("Operation cancelled, no messages were sent")
+    time.sleep(5)
 
 
 workBook.close()
