@@ -37,24 +37,28 @@ defaultPath = "C:\\Users\\vlady\\OneDrive\\Desktop\\Python\\pr\\Book1.xlsx"
 fileName = ""
 
 pathAnswer = pip.inputYesNo(prompt="Excel spreadsheet must be closed before running application. (spreadsheet should have columns: A - first name, B - last name, C - email).\nThe default directory is: " + defaultPath +  ". Do you want to use this directory? y/n\n")
+pathErrors = False
 
 while (fileName == ""):
 
-    fileName = defaultPath
+    if pathAnswer == "yes" and pathErrors == False:
+        fileName = defaultPath
 
-    if pathAnswer == "no":
+    elif pathAnswer == "no" or fileName == "":
         fileName = pip.inputFilepath(prompt="Please enter root path to the Excel spreadsheet." + "\n", strip='"')
 
-    # defines workBook, sheet, list of columns and count of rows
+    # defines workBook, sheet, list of columns and coSunt of rows
     try:
         workBook = openpyxl.load_workbook(fileName)
     except openpyxl.utils.exceptions.InvalidFileException:
         print("Root path is not correct! Please copy root path of spreadsheet.")
         fileName = ""
+        pathErrors = True
     
     except FileNotFoundError:
         print("Root path is not correct! Please copy root path of spreadsheet.")
         fileName = ""
+        pathErrors = True
 
 sheet = workBook.active
 columnList = ["A", "B", "C"]
