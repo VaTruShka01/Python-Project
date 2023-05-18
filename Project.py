@@ -33,7 +33,7 @@ def emailValidation(firstName, lastName, email):
     return email
 
 # asks user file path on their local computer
-defaultPath = "C:\\Users\\vlady\\OneDrive\\Desktop\\Python\\pr\\Book1.xlsx"
+defaultPath = "C:\\Users\\vlady\\OneDrive\\Desktop\\2semester\\Python\\pr\\Book1.xlsx"
 fileName = ""
 
 pathAnswer = pip.inputYesNo(prompt="Excel spreadsheet must be closed before running application. (spreadsheet should have columns: A - first name, B - last name, C - email).\nThe default directory is: " + defaultPath +  ". Do you want to use this directory? y/n\n")
@@ -103,7 +103,7 @@ except (pywintypes.com_error):
 
 # final confirmation before sending emails
 confirmation = pip.inputYesNo(
-    prompt="Are you sure you want to send messages to all emails in a spreadsheet: y/n\n", strip='"')
+    prompt="Make sure that you are logged in to OutLook desktop app if login window appeared.\nAre you sure you want to send messages to all emails in a spreadsheet: y/n\n", strip='"')
 
 if (confirmation == "yes"):
     for email in emails:
